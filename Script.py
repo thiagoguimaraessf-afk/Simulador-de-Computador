@@ -2,8 +2,11 @@
 
 # Memoria Ran - Ela era definir um ID para cada posição de memória, e o valor armazenado nessa posição. Por exemplo, a posição de memória 0 poderia armazenar o valor 5, a posição de memória 1 poderia armazenar o valor 10, e assim por diante.
 
+<<<<<<< HEAD
 menoria_ran = [0] * 100 # Inicializa a memória RAM com 256 posições, todas com o valor 0
 
+=======
+>>>>>>> 93f7b7edbe2e9f372fd476ae1abc65254ec90674
 
 # Registradores - Uma menoria rapida, onde ficaram guardada as corisas que estão sendo processadas no momento. Por exemplo, um registrador poderia armazenar o resultado de uma operação de adição, ou o endereço de memória onde um valor está armazenado. (So precisam salvar numeros inteiros) (so existem 4 registradores, R0, R1, R2 e R3)
 
@@ -50,6 +53,7 @@ def LOAD():
 # Comando - HALT (parar)
 def HALT():
     print("Comando HALT executado")
+    # Colocar comando para finalizar codigo
 
 def Clear():
     os.system('cls' if os.name == 'nt' else 'clear')
