@@ -2,9 +2,15 @@
 
 # Memoria Ran - Ela era definir um ID para cada posição de memória, e o valor armazenado nessa posição. Por exemplo, a posição de memória 0 poderia armazenar o valor 5, a posição de memória 1 poderia armazenar o valor 10, e assim por diante.
 
-menoria_ran = [0] * 100 # Inicializa a memória RAM com 256 posições, todas com o valor 0
+memoria_ran = [0] * 100 # Inicializa a memória RAM com 256 posições, todas com o valor 0
 
-# Registradores - Uma menoria rapida, onde ficaram guardada as corisas que estão sendo processadas no momento. Por exemplo, um registrador poderia armazenar o resultado de uma operação de adição, ou o endereço de memória onde um valor está armazenado. (So precisam salvar numeros inteiros) (so existem 4 registradores, R0, R1, R2 e R3)
+# Carregando um programa de teste na memória
+memoria_ran[0] = "clear"
+memoria_ran[1] = "load"
+memoria_ran[2] = "add"
+memoria_ran[3] = "halt"
+
+# Registradores - Uma memória rápida, onde ficaram guardada as coisas que estão sendo processadas no momento. Por exemplo, um registrador poderia armazenar o resultado de uma operação de adição, ou o endereço de memória onde um valor está armazenado. (So precisam salvar numeros inteiros) (so existem 4 registradores, R0, R1, R2 e R3)
 
 R0 = 0 # Registrador 0
 R1 = 0 # Registrador 1
@@ -33,27 +39,68 @@ def SUB():
 def JMP():
     print("Comando JMP executado")
 
-    R0 = int(input("Digite o endereço para pular: "))
+    valor = int(input("Digite o endereço para pular: "))
     
-    if R0 < 0 or R0 >= len(menoria_ran):
-        print("Endereço inválido. O endereço deve estar entre 0 e", len(menoria_ran) - 1)
+    if valor < 0 or valor >= len(memoria_ran):
+        print("Endereço inválido. O endereço deve estar entre 0 e", len(memoria_ran) - 1)
     else:
         global PC
-        PC = R0
+        PC = valor
         print("Programa Counter (PC) atualizado para:", PC)
+        return PC
             
 # Comando - LOAD (carregar)
 def LOAD():
     print("Comando LOAD executado")
 
+    valor = int(input("Digite o valor na memória para carregar: "))
+
+    global memoria_ran
+
+    if valor < 0 or valor >= len(memoria_ran):
+        print("Endereço inválido. O endereço deve estar entre 0 e", len(memoria_ran) - 1)
+    else:
+        valor_carregado = memoria_ran[valor]
+        print("Valor carregado da memória:", valor_carregado)
+
+        repetir = True
+
+        while repetir:
+            registrador = input("Em qual registrador deseja armazenar o valor carregado? (0 - R0, 1 - R1, 2 - R2 ou 3 - R3, Cancelar): ")
+            if registrador == "0":
+                global R0
+                R0 = valor_carregado
+                print("Valor armazenado no registrador R0:", R0)
+                repetir = False
+            elif registrador == "1":
+                global R1
+                R1 = valor_carregado
+                print("Valor armazenado no registrador R1:", R1)
+                repetir = False
+            elif registrador == "2":
+                global R2
+                R2 = valor_carregado
+                print("Valor armazenado no registrador R2:", R2)
+                repetir = False
+            elif registrador == "3":
+                global R3
+                R3 = valor_carregado
+                print("Valor armazenado no registrador R3:", R3)
+                repetir = False
+            elif registrador == "cancelar":
+                print("Operação de LOAD cancelada.")
+                repetir = False
+            else:
+                print("Registrador inválido. O registrador deve ser 0, 1, 2, 3 ou cancelar.")
+
 # Comando - HALT (parar)
 def HALT():
     print("Comando HALT executado")
     # Colocar comando para finalizar codigo
+    exit()
 
 def Clear():
     os.system('cls' if os.name == 'nt' else 'clear')
-    print("Tela limpa.")
 
 # Comando - Help (Mostrar os codigos de cada comando)
 def Help():
@@ -68,9 +115,13 @@ def Help():
 
 # Inicicialização
 
+Clear() # Limpa a tela antes de iniciar o simulador
+
+print("Iniciando o simulador de computador...")
+
 print("Bem-vindo ao simulador de computador!")
 
-print("Digite 'Help' para ver os comandos disponíveis.")
+print("Digite 'help' para ver os comandos disponíveis.")
 
 while True: # Loop infinito para continuar pedindo comandos até que o usuário decida parar
 
