@@ -10,6 +10,8 @@ PC = 0
 
 Memoria_ram = [0] * 100
 
+# Carregando um programa de teste na memória de forma limpa
+
 Memoria_ram[0] = ("load 50 0")  # Carrega o valor da posição 50 no R0
 Memoria_ram[1] = ("load 50 1")  # Carrega o valor da posição 50 no R1
 Memoria_ram[2] = ("ula add 0 1 2") # Soma R0 e R1 e joga no R2
@@ -31,23 +33,21 @@ def ULA(operacao, operando1, operando2):
 
 # Discionario de comandos
 
-def Help():
+def Help(): # || Função para mostrar os comandos disponíveis
     print(" ")
     print("Comandos disponíveis:")
     print("jmp - Pular para um endereço específico, (escreva: jmp <endereço>)")
-    print("load - Carregar um valor da memória para um registrador")
+    print("load - Carregar um valor da memória para um registrador (escreva: load <endereço_memoria> <num_registrador>)")
     print("ula - Realizar uma operação aritmética entre dois registradores, (escreva: ula <operação> <operando1> <operando2>)")
     print("clear - Limpar a tela do console")
     print("halt - Finalizar a execução")
 
-def Clear():
+def Clear(): # || Função para limpar a tela do console
     import os # || Importa o módulo os para usar a função de limpar a tela
     
     os.system('cls' if os.name == 'nt' else 'clear') # || Limpa a tela do console dependendo do sistema operacional
 
-def JMP(valor):
-    print("Comando JMP executado")
-    
+def Jmp(valor): # || Comando para pular para um endereço específico, o valor é o endereço para onde o PC deve ser atualizado
     if valor < 0 or valor >= len(Memoria_ram):
         print("Endereço inválido. O endereço deve estar entre 0 e", len(Memoria_ram) - 1)
     else:
@@ -56,12 +56,12 @@ def JMP(valor):
         print("Programa Counter (PC) atualizado para:", PC)
         return PC
 
-def HALT():
-    print("Comando HALT executado")
+def Halt(): # || Para tudo
+    print("Finalizando Processo")
     # Colocar comando para finalizar codigo
     exit()
 
-def LOAD(endereco_memoria, num_registrador): # Leva as informações para os registradores
+def Load(endereco_memoria, num_registrador): # || Leva as informações para os registradores
     global Memoria_ram, Registradores
     if endereco_memoria < 0 or endereco_memoria >= len(Memoria_ram):
         print("Erro: Endereço de memória inválido.")
@@ -74,6 +74,13 @@ def LOAD(endereco_memoria, num_registrador): # Leva as informações para os reg
         else:
             Registradores[num_registrador] = valor_carregado
             print(f"Valor {valor_carregado} carregado no registrador R{num_registrador}")
+
+def Status(): # || Função para mostrar o status dos registradores
+    print("Status dos Registradores:")
+    for i in range(len(Registradores)):
+        print(f"R{i}: {Registradores[i]}")
+
+# Computador
 
 while True: # Modo de execução do computador, onde o usuário pode escolher entre ser admin ou não, e dependendo da escolha, o computador funciona de forma diferente
 
@@ -93,11 +100,11 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
             elif comando.startswith("jmp"):
                 try:
                     valor = int(comando.split()[1]) # || Extrai o valor do comando JMP
-                    JMP(valor)
+                    Jmp(valor)
                 except (IndexError, ValueError): # IndexError || caso so escreva jmp  - ValueError || Trata erros de sintaxe e conversão de tipo
                     print("Uso correto: jmp <endereço>")
             elif comando == "halt":
-                HALT()
+                Halt()
             elif comando.startswith("ula"):
                 try:
                     partes = comando.split()
@@ -118,7 +125,7 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
                     endereco_memoria = int(partes[1]) # || Extrai o endereço de memória
                     num_registrador = int(partes[2]) # || Extrai o número do registrador
 
-                    LOAD(endereco_memoria, num_registrador)
+                    Load(endereco_memoria, num_registrador)
                 except (IndexError, ValueError):
                     print("Uso correto: load <endereço_memoria> <num_registrador>")
 
@@ -128,7 +135,6 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
         print("Carregando programa na memória RAM...")
         
         while True: # Computador funciona de forma automatica
-
             comando = Memoria_ram[PC] # || Lê o comando da memória RAM na posição do PC
 
             if isinstance(comando, int): # Se for inteiro não é nenhum comando
@@ -137,7 +143,7 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
                 continue # || Continua para a próxima posição da memória RAM
 
             if comando == "halt":
-                HALT()
+                Halt()
             elif comando == "clear":
                 Clear()
                 PC += 1 
@@ -160,7 +166,7 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
             elif comando.startswith("jmp"):
                 try:
                     valor = int(comando.split()[1]) # || Extrai o valor do comando JMP
-                    JMP(valor)
+                    Jmp(valor)
                 except (IndexError, ValueError):
                     print("Uso correto: jmp <endereço>")
             elif comando.startswith("load"):
@@ -169,7 +175,7 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
                     endereco_memoria = int(partes[1]) # || Extrai o endereço de memória
                     num_registrador = int(partes[2]) # || Extrai o número do registrador
 
-                    LOAD(endereco_memoria, num_registrador)
+                    Load(endereco_memoria, num_registrador)
                 except (IndexError, ValueError):
                     print("Uso correto: load <endereço_memoria> <num_registrador>")
                 
