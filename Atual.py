@@ -12,11 +12,39 @@ Memoria_ram = [0] * 100
 
 # Carregando um programa de teste na memória de forma limpa
 
-Memoria_ram[0] = ("load 50 0")  # Carrega o valor da posição 50 no R0
-Memoria_ram[1] = ("load 50 1")  # Carrega o valor da posição 50 no R1
-Memoria_ram[2] = ("ula add 0 1 2") # Soma R0 e R1 e joga no R2
-Memoria_ram[3] = ("halt") # || Comando para finalizar a execução do programa
-Memoria_ram[50] = 2 # || Guardando o número 1 na posição 50 isolada de dados
+Memoria_ram[51] = 1 # Guardando o número 1 na posição 51 isolada de dados
+Memoria_ram[52] = 2 # Guardando o número 2 na posição 52 isolada de dados
+
+Memoria_ram[0] = ("load 51 0")  
+Memoria_ram[1] = ("load 52 1") 
+Memoria_ram[2] = ("ula add 0 1 2") 
+Memoria_ram[3] = "status pc"
+Memoria_ram[4] = "status registradores"
+Memoria_ram[5] = "halt"
+
+Memoria_ram[10] = ("status registradores")
+Memoria_ram[11] = ("load 51 0")
+Memoria_ram[12] = ("load 52 1")
+Memoria_ram[13] = ("ula mul 0 1 2")
+Memoria_ram[14] = "status pc"
+Memoria_ram[15] = "status registradores"
+Memoria_ram[16] = "halt"
+
+Programas = {
+    "Nome1": {
+        "PC": 0,
+        "Registradores": [0, 0, 0, 0],
+        "Estado": "Pronto"           # Pode ser: "Pronto", "Executando" ou "Halt"
+    },
+
+    "Nome2": {
+        "PC": 10,
+        "Registradores": [0, 0, 0, 0],
+        "Estado": "Pronto"           # Pode ser: "Pronto", "Executando" ou "Halt"
+    },
+}
+
+Processo_Atual = "Nome1"
 
 # ULA (Unidade Lógica e Aritmética) 
 
@@ -38,9 +66,10 @@ def Help(): # || Função para mostrar os comandos disponíveis
     print("Comandos disponíveis:")
     print("jmp - Pular para um endereço específico, (escreva: jmp <endereço>)")
     print("load - Carregar um valor da memória para um registrador (escreva: load <endereço_memoria> <num_registrador>)")
-    print("ula - Realizar uma operação aritmética entre dois registradores, (escreva: ula <operação> <operando1> <operando2>)")
+    print("ula - Realizar uma operação aritmética entre dois registradores, (escreva: ula <operação> <operando1> <operando2> <Registrador de resultado>)")
     print("clear - Limpar a tela do console")
     print("halt - Finalizar a execução")
+    print("status - Mostrar o status do PC ou dos registradores, (escreva: status <PC ou Registradores>)")
 
 def Clear(): # || Função para limpar a tela do console
     import os # || Importa o módulo os para usar a função de limpar a tela
@@ -75,10 +104,20 @@ def Load(endereco_memoria, num_registrador): # || Leva as informações para os 
             Registradores[num_registrador] = valor_carregado
             print(f"Valor {valor_carregado} carregado no registrador R{num_registrador}")
 
-def Status(): # || Função para mostrar o status dos registradores
-    print("Status dos Registradores:")
-    for i in range(len(Registradores)):
-        print(f"R{i}: {Registradores[i]}")
+def Status(valor): # || Mostra o status do PC ou dos registradores dependendo do valor passado
+    if valor.lower() == "pc":
+        global PC
+
+        print("Status do PC:", PC)
+
+    elif valor.lower() == "registradores":
+        global Registradores
+
+        print("Status dos Registradores:")
+        for i in range(len(Registradores)):
+            print(f"R{i}: {Registradores[i]}")
+    else:
+        print("Uso correto: status <PC ou Registradores>")
 
 # Computador
 
@@ -128,6 +167,17 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
                     Load(endereco_memoria, num_registrador)
                 except (IndexError, ValueError):
                     print("Uso correto: load <endereço_memoria> <num_registrador>")
+            elif comando.startswith("status"):
+                try:
+                    valor = comando.split()[1] # || Extrai o valor do comando status
+                    if valor.lower() == "pc":
+                        Status(valor)
+                    elif valor.lower() == "registradores":
+                        Status(valor)
+                    else:
+                        print("Uso correto: status <PC ou Registradores>")
+                except (IndexError, ValueError):
+                    print("Uso correto: status <PC ou Registradores>")
 
     elif adm.lower() == 'n': # Modo Automático
         Clear()
@@ -148,7 +198,6 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
                 Clear()
                 PC += 1 
             elif comando.startswith("ula"):
-                
                 try:
                     partes = comando.split()
                     operacao = partes[1] # || Extrai a operação (add, sub, mul)
