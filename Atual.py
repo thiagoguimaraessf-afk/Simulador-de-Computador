@@ -10,6 +10,12 @@ PC = 0
 
 Memoria_ram = [0] * 100
 
+Memoria_ram[0] = ("load 50 0")  # Carrega o valor da posição 50 no R0
+Memoria_ram[1] = ("load 50 1")  # Carrega o valor da posição 50 no R1
+Memoria_ram[2] = ("ula add 0 1 2") # Soma R0 e R1 e joga no R2
+Memoria_ram[3] = ("halt") # || Comando para finalizar a execução do programa
+Memoria_ram[50] = 2 # || Guardando o número 1 na posição 50 isolada de dados
+
 # ULA (Unidade Lógica e Aritmética) 
 
 def ULA(operacao, operando1, operando2):
@@ -68,8 +74,6 @@ def LOAD(endereco_memoria, num_registrador): # Leva as informações para os reg
         else:
             Registradores[num_registrador] = valor_carregado
             print(f"Valor {valor_carregado} carregado no registrador R{num_registrador}")
-    
-
 
 while True: # Modo de execução do computador, onde o usuário pode escolher entre ser admin ou não, e dependendo da escolha, o computador funciona de forma diferente
 
@@ -98,11 +102,13 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
                 try:
                     partes = comando.split()
                     operacao = partes[1] # || Extrai a operação (add, sub, mul)
-                    operando1 = int(partes[2]) # || Extrai o primeiro operando (registrador)
-                    operando2 = int(partes[3]) # || Extrai o segundo operando (registrador)
+                    operando1 = Registradores[int(partes[2])] # || Extrai o primeiro operando (registrador)
+                    operando2 = Registradores[int(partes[3])] # || Extrai o segundo operando (registrador)
+                    resultado_registrador = int(partes[4]) # || Extrai o número do registrador para armazenar o resultado
 
                     resultado = ULA(operacao, operando1, operando2)
                     if resultado is not None:
+                        Registradores[resultado_registrador] = resultado
                         print("Resultado da operação ULA:", resultado)
                 except (IndexError, ValueError):
                     print("Uso correto: ula <operação> <operando1> <operando2>")
@@ -113,15 +119,62 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
                     num_registrador = int(partes[2]) # || Extrai o número do registrador
 
                     LOAD(endereco_memoria, num_registrador)
+                except (IndexError, ValueError):
+                    print("Uso correto: load <endereço_memoria> <num_registrador>")
 
     elif adm.lower() == 'n': # Modo Automático
         Clear()
+        print("Iniciando execução automática...")
+        print("Carregando programa na memória RAM...")
+        
         while True: # Computador funciona de forma automatica
-            print("Iniciando execução automática...")
-            print("Carregando programa na memória RAM...")
 
-            
-            
+            comando = Memoria_ram[PC] # || Lê o comando da memória RAM na posição do PC
+
+            if isinstance(comando, int): # Se for inteiro não é nenhum comando
+                print("Nenhum comando encontrado na posição", PC)
+                PC += 1
+                continue # || Continua para a próxima posição da memória RAM
+
+            if comando == "halt":
+                HALT()
+            elif comando == "clear":
+                Clear()
+                PC += 1 
+            elif comando.startswith("ula"):
+                
+                try:
+                    partes = comando.split()
+                    operacao = partes[1] # || Extrai a operação (add, sub, mul)
+                    operando1 = Registradores[int(partes[2])] # || Extrai o primeiro operando (registrador)
+                    operando2 = Registradores[int(partes[3])] # || Extrai o segundo
+                    resultado_registrador = int(partes[4]) # || Extrai o número do registrador para armazenar o resultado
+
+                    resultado = ULA(operacao, operando1, operando2)
+                    if resultado is not None:
+                        Registradores[resultado_registrador] = resultado
+                        print("Resultado da operação ULA:", resultado)
+                except (IndexError, ValueError):
+                    print("Uso correto: ula <operação> <operando1> <operando2>")
+                PC += 1 
+            elif comando.startswith("jmp"):
+                try:
+                    valor = int(comando.split()[1]) # || Extrai o valor do comando JMP
+                    JMP(valor)
+                except (IndexError, ValueError):
+                    print("Uso correto: jmp <endereço>")
+            elif comando.startswith("load"):
+                try:
+                    partes = comando.split()
+                    endereco_memoria = int(partes[1]) # || Extrai o endereço de memória
+                    num_registrador = int(partes[2]) # || Extrai o número do registrador
+
+                    LOAD(endereco_memoria, num_registrador)
+                except (IndexError, ValueError):
+                    print("Uso correto: load <endereço_memoria> <num_registrador>")
+                
+                PC += 1 
+                
 
     else: # Nada
         print("Opção inválida.") # Volta para saber se o usuário quer ser admin ou não
