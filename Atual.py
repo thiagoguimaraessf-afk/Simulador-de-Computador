@@ -80,13 +80,6 @@ Programas = {
     },
 }
 
-def Processo_Atual(): # || Função para identificar qual processo está sendo executado atualmente, verificando o estado dos programas na tabela
-    global Programas
-    for nome, info in Programas.items():
-        if info['Estado'] == "Executando":
-            return nome
-    return None
-
 # ULA (Unidade Lógica e Aritmética) 
 
 def ULA(operacao, operando1, operando2):
