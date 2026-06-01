@@ -1,3 +1,22 @@
+"""
+
+Simulador de Computador
+
+Produzido por: 
+
+Thiago Guimarães
+
+Apoio: 
+
+Daniel Padrão
+Guilherme Nunes
+Luis Davi
+Miguel Pereira
+
+"""
+
+
+
 # Registradores || Normalmente são 4
 
 Registradores = [0, 0, 0, 0]
@@ -17,10 +36,11 @@ Memoria_ram[52] = 2 # Guardando o número 2 na posição 52 isolada de dados
 
 Memoria_ram[0] = ("load 51 0")  
 Memoria_ram[1] = ("load 51 1") 
-Memoria_ram[2] = ("ula add 0 1 2") 
-Memoria_ram[3] = "status pc"
-Memoria_ram[4] = "status registradores"
-Memoria_ram[5] = "halt"
+Memoria_ram[2] = ("status registradores")
+Memoria_ram[3] = ("ula add 0 1 2") 
+Memoria_ram[4] = "status pc"
+Memoria_ram[5] = "status registradores"
+Memoria_ram[6] = "halt"
 
 Memoria_ram[10] = ("status registradores")
 Memoria_ram[11] = ("load 51 0")
@@ -30,28 +50,35 @@ Memoria_ram[14] = "status pc"
 Memoria_ram[15] = "status registradores"
 Memoria_ram[16] = "halt"
 
+Memoria_ram[20] = ("jmp 0")
+Memoria_ram[21] = ("status registradores")
+
+
 Programas = {
     "Youtube": {
         "PC": 0,
+        "Base": 0,
+        "Limite": 9,
         "Registradores": [0, 0, 0, 0],
         "Estado": "Pronto"           # Pode ser: "Pronto", "Executando" ou "Halt"
     },
 
     "Discord": {
         "PC": 10,
+        "Base": 10,
+        "Limite": 19,
+        "Registradores": [0, 0, 0, 0],
+        "Estado": "Pronto"           # Pode ser: "Pronto", "Executando" ou "Halt"
+    },
+
+      "Spotfy": {
+        "PC": 20,
+        "Base": 20,
+        "Limite": 29,
         "Registradores": [0, 0, 0, 0],
         "Estado": "Pronto"           # Pode ser: "Pronto", "Executando" ou "Halt"
     },
 }
-
-"""
-    # print de programas
-    for nome, info in Programas.items():
-        print(f"Programa: {nome}")
-        print(f"  PC: {info['PC']}")
-        print(f"  Registradores: {info['Registradores']}")
-        print(f"  Estado: {info['Estado']}\n")
-"""
 
 def Processo_Atual(): # || Função para identificar qual processo está sendo executado atualmente, verificando o estado dos programas na tabela
     global Programas
@@ -206,17 +233,18 @@ while True: # Modo de execução do computador, onde o usuário pode escolher en
 Carregando programa na memória RAM 
               """)
         
+        fila = list(Programas.keys()) # || Cria uma fila com os nomes dos programas para simular a ordem de chegada dos processos
+
         while True: # LOOP DO ESCALONADOR: Fica escolhendo os processos
 
-            processo_escolhido = None
-            for nome, info in Programas.items():
-                if info["Estado"] == "Pronto":
-                    processo_escolhido = nome
-                    break # Para a busca e vai executar!
+            if len(fila) == 0: # Ver se a fila de processos está vazia, ou seja, se não tem mais processos para executar
+                print(f"\n[SO] >>> Sucesso: Todos os processos foram finalizados pelo Escalonador! <<<")
+                Halt()
 
-            if processo_escolhido is None:
-                print("\n🎉[SO] Todos os processos da tabela foram finalizados com sucesso!")
-                Halt() # Finaliza o programa quando todos os processos estiverem finalizados    
+            processo_escolhido = fila.pop(0) 
+
+            comandos_rodados = 0 # || Contador de comandos rodados para limitar a quantidade de comandos por processo
+            maximo_comandos = 2 # || Limite de comandos por processo para simular a troca de contexto
 
             print(f"\n[SO] >>> Trocando de contexto para: {processo_escolhido} <<<")
             Programas[processo_escolhido]["Estado"] = "Executando"
@@ -227,12 +255,13 @@ Carregando programa na memória RAM
                 comando = Memoria_ram[PC] # || Lê o comando da memória RAM na posição do PC
 
                 if isinstance(comando, int): # Se for inteiro não é nenhum comando
-                    print("Nenhum comando encontrado na posição", PC)
+                    print(f"[SO] >>> Comando inválido na posição {PC}: {comando} <<<")
                     PC += 1
+                    comandos_rodados += 1
                     continue # || Continua para a próxima posição da memória RAM
 
                 if comando == "halt":
-                    print(f" [SO] Processo {processo_escolhido} finalizado com sucesso!")
+                    print(f"[SO] Processo {processo_escolhido} finalizado com sucesso!")
                     Programas[processo_escolhido]["Estado"] = "Halt"
                     
                     # TROCA DE CONTEXTO (SAVE): Salva o estado final na tabela antes de sair
@@ -262,8 +291,17 @@ Carregando programa na memória RAM
                     PC += 1 
                 elif comando.startswith("jmp"):
                     try:
-                        valor = int(comando.split()[1]) # || Extrai o valor do comando JMP
-                        Jmp(valor)
+                        valor = int(comando.split()[1])
+                        base_atual = Programas[processo_escolhido]["Base"]
+                        limite_atual = Programas[processo_escolhido]["Limite"]
+                        
+                        if valor < base_atual or valor > limite_atual:
+                            print(f"\n[ERRO DE MEMÓRIA] O processo {processo_escolhido} tentou invadir o endereço {valor}!")
+                            print(f"Processo {processo_escolhido} abortado por violação de segurança.")
+                            Programas[processo_escolhido]["Estado"] = "Halt"
+                            break 
+                        else:
+                            Jmp(valor)
                     except (IndexError, ValueError):
                         print("Uso correto: jmp <endereço>")
                 elif comando.startswith("load"):
@@ -289,6 +327,21 @@ Carregando programa na memória RAM
                     except (IndexError, ValueError):
                         print("Uso correto: status <PC ou Registradores>")
                     PC += 1
+
+                comandos_rodados += 1
+
+                if comandos_rodados >= maximo_comandos: 
+                    print(f"[SO] Tempo de CPU esgotado para o processo {processo_escolhido}. Realizando troca de contexto...")
+                    
+                    # TROCA DE CONTEXTO (SAVE)
+                    Programas[processo_escolhido]["Estado"] = "Pronto"
+                    Programas[processo_escolhido]["PC"] = PC
+                    Programas[processo_escolhido]["Registradores"] = Registradores.copy()
+                    
+                    # CORREÇÃO 2: O tempo acabou? Joga ele de volta para o FINAL da fila!
+                    fila.append(processo_escolhido)
+                    
+                    break
 
     else: # Nada
         print("Opção inválida.") # Volta para saber se o usuário quer ser admin ou não
